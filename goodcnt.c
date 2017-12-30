@@ -1,8 +1,6 @@
 /* 
- * badcnt.c - An improperly synchronized counter program 
+ * goodcnt.c - badcnt.c debugged
  */
-/* $begin badcnt */
-/* WARNING: This code is buggy! */
 #include "csapp.h"
 
 void *thread(void *vargp);  /* Thread routine prototype */
@@ -10,10 +8,14 @@ void *thread(void *vargp);  /* Thread routine prototype */
 /* Global shared variable */
 volatile long cnt = 0; /* Counter */
 
+sem_t mutex;
+
 int main(int argc, char **argv) 
 {
     long niters;
     pthread_t tid1, tid2;
+
+    Sem_init(&mutex, 0, 1);
 
     /* Check input argument */
     if (argc != 2) { 
@@ -41,9 +43,11 @@ void *thread(void *vargp)
 {
     long i, niters = *((long *)vargp);
 
-    for (i = 0; i < niters; i++) //line:conc:badcnt:beginloop
-	cnt++;                   //line:conc:badcnt:endloop
+    for (i = 0; i < niters; i++) {//line:conc:badcnt:beginloop
+        P(&mutex);
+        cnt++;                   //line:conc:badcnt:endloop
+        V(&mutex);
+    }
 
     return NULL;
 }
-/* $end badcnt */
